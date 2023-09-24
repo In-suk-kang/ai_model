@@ -3,10 +3,10 @@ from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from model import Model
-from multi import multi_processing
+#from multi import multi_processing
 import uvicorn
 from db_model import save_url
-
+from new import check_url_and_ai
 # 데이터베이스 연결 설정
 DATABASE_URL = "mysql+mysqlconnector://root:1q2w3e4r!@localhost/tigerdb"
 engine = create_engine(DATABASE_URL)
@@ -23,8 +23,8 @@ app = FastAPI()
 @app.post("/predict")
 async def predict(data: Model):
     input_url = data.url
-    AI_output, url_type = multi_processing(input_url)
-
+    AI_output, url_type = check_url_and_ai(input_url)
+    print(AI_output,url_type)
     db_data = save_url(ai_output=AI_output, url_type=url_type, url=input_url)
     db.add(db_data)
     db.commit()
