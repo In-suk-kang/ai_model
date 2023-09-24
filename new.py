@@ -73,26 +73,21 @@ def check_url_and_ai(url):
     ai_model = ai_model_class()
     ai_result = ai_model.predict_results(url)[0]
     malicious = ''
-    url_type = ''
+    url_type = ai_result
 
     # 데이터베이스에서 URL 검색
-    results = db.query(URLInfo).all()
-    for result in results:
-        if (result.url == url or result.url == url.lstrip("www.")):
-            malicious = False
-            url_type = "benign"
-            break
+    db_url = db.query(URLInfo).filter(URLInfo.url == url).first()
+    saved_url = db.query(save_url).filter(save_url.url == url).first()
 
-    results = db.query(save_url).all()
-    for result in results:
-        if (result.url == url or result.url == url.lstrip("www.")):
-            malicious = result.ai_output
-            url_type = result.url_type
-            break
+    if db_url:
+        malicious = False
+        url_type = "benign"
 
-    return malicious,url_type
+    if saved_url:
+        malicious = saved_url.ai_output
+        url_type = saved_url.url_type
+
     # 세션 닫기
+    db.close()
 
-
-# 사용 예시:
-
+    return malicious, url_type
